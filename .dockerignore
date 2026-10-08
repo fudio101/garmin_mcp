@@ -1,1 +1,12 @@
-.gitignore
+# The image only needs the package metadata, the lockfile and the source.
+# Everything else (tests, .git, local tokens and secrets, .venv) stays out of
+# the build context.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSE
+!src/
+
+**/__pycache__
+**/*.py[cod]
