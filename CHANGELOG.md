@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.3.0](https://github.com/fudio101/garmin_mcp/compare/0.2.0...0.3.0) (2026-10-12)
+
+
+### Features
+
+* **activity:** add delete_activity with a confirmation gate ([68b3547](https://github.com/fudio101/garmin_mcp/commit/68b3547c1e7ce3fac69bb8ad7ed58bdea887d785))
+* add a tool to write structured exercise sets to strength activities ([877d43e](https://github.com/fudio101/garmin_mcp/commit/877d43ec9129ef2df88bc2cdded9b18ef0e363f3))
+* **http:** add /readyz reporting Garmin login state ([da733f8](https://github.com/fudio101/garmin_mcp/commit/da733f886331577b61d5c823c366ee7f14320c73))
+* **http:** add GARMIN_MCP_STATELESS_HTTP to avoid idle session expiry ([48ca02d](https://github.com/fudio101/garmin_mcp/commit/48ca02d3e024ad485ecf90b7229bbd62591ed61f))
+* **nutrition:** add brand_name to upsert_and_log ([078d8e3](https://github.com/fudio101/garmin_mcp/commit/078d8e38081d93d55917dde2fa2683190b72a288))
+* **nutrition:** return structured errors from food-log write tools ([5e3d379](https://github.com/fudio101/garmin_mcp/commit/5e3d379d4050bebf5f9c69068cd315973552f268))
+* **workouts:** add raw option to get_workout_by_id ([f3f4d33](https://github.com/fudio101/garmin_mcp/commit/f3f4d33e1cb26acf5ad969c35594081a06c43ed7))
+
+
+### Bug Fixes
+
+* **courses:** handle nullable course and geo points ([75bd15e](https://github.com/fudio101/garmin_mcp/commit/75bd15edec34ea94163b8f4c9eb544822fcf0161))
+* **dxt:** generate the manifest tools list from registered tools ([7eafdd7](https://github.com/fudio101/garmin_mcp/commit/7eafdd708238d9eab902005aa073a4608959ae12))
+* **fit:** read enhanced_altitude/enhanced_speed and record distance ([938d940](https://github.com/fudio101/garmin_mcp/commit/938d940a6567a3ced5dc8093e6a9424a54705773))
+* harden Garmin response edge cases ([2f359a7](https://github.com/fudio101/garmin_mcp/commit/2f359a7dfaf34670fb873f0543f3e33f062926d2))
+* **nutrition:** preserve serving basis on update_custom_food ([b446dba](https://github.com/fudio101/garmin_mcp/commit/b446dbaa2e39ce4effa680dbc5eaf8e496496f2c))
+* **training:** preserve device provenance for training load ([da97721](https://github.com/fudio101/garmin_mcp/commit/da97721cd94545e9afd7e64bb02377f9f9f4de7a))
+* **training:** read lactate threshold speed as cm/ms, not inverse pace ([57971ea](https://github.com/fudio101/garmin_mcp/commit/57971ea31c88bf6907bb1515b7dd9fe36bc886aa))
+* **workouts:** include adaptive training plan details ([d716630](https://github.com/fudio101/garmin_mcp/commit/d7166301945afa4fffe8e07e9f56fd695a7e526c))
+* **workouts:** keep target units and pool length in get_workout_by_id ([a8072b1](https://github.com/fudio101/garmin_mcp/commit/a8072b10ce8d0a113413a18eceee98b5c2b5af2b))
+* **workouts:** require confirm=true before deleting workouts ([97df33d](https://github.com/fudio101/garmin_mcp/commit/97df33db42516aa6fb25222f0dcc87f34744cdda))
+
+
+### Documentation
+
+* document Garmin length limits on free-text tool fields ([cda05d6](https://github.com/fudio101/garmin_mcp/commit/cda05d6f71284ba4998cd5b0d7aabeef6329f81e))
+* **nutrition:** correct delete_custom_food's active-reference claim ([3bdab6d](https://github.com/fudio101/garmin_mcp/commit/3bdab6d39b6da8d45de159ddf724b05fe0d74182))
+* **workouts:** document custom % FTP power ranges ([8dc6d23](https://github.com/fudio101/garmin_mcp/commit/8dc6d2327b10a7ff07c864ee0b73bfe23ceb8598))
+
 ## [0.2.0](https://github.com/fudio101/garmin_mcp/compare/0.1.0...0.2.0) (2026-10-08)
 
 
