@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.4.0](https://github.com/fudio101/garmin_mcp/compare/0.3.0...0.4.0) (2026-10-13)
+
+
+### Features
+
+* **mcp:** annotate tool effects for clients ([#411](https://github.com/fudio101/garmin_mcp/issues/411)) ([542cdc2](https://github.com/fudio101/garmin_mcp/commit/542cdc20b271c62dabcc4d88109213332ca93ecd))
+
+
+### Bug Fixes
+
+* **activities:** null out wrapped-around negative lap distances ([#413](https://github.com/fudio101/garmin_mcp/issues/413)) ([2f05804](https://github.com/fudio101/garmin_mcp/commit/2f05804b3ae9da23b4a9972a40747d3f7c474fe6))
+* **analysis:** keep bike power out of running PDC, sign-aware HR drift, timed shift bursts ([#436](https://github.com/fudio101/garmin_mcp/issues/436)) ([5de7248](https://github.com/fudio101/garmin_mcp/commit/5de72486138ce77530c59a77fbf21023ba3bf519))
+* **analysis:** use record timestamps instead of assuming 1 record = 1 s ([#437](https://github.com/fudio101/garmin_mcp/issues/437)) ([72b44e2](https://github.com/fudio101/garmin_mcp/commit/72b44e26bcdc87b245d1cf1e6fd1dd380bd3d64b))
+* **auth_cli:** don't fail verification for profiles without a full name ([#425](https://github.com/fudio101/garmin_mcp/issues/425)) ([f5c886e](https://github.com/fudio101/garmin_mcp/commit/f5c886e5afef58c94471150773cca663c67810a4))
+* **auth:** use the given credentials for password logins and load the profile ([#419](https://github.com/fudio101/garmin_mcp/issues/419)) ([fa16737](https://github.com/fudio101/garmin_mcp/commit/fa167375b35d42418d22a29be9181e9cdf9450eb))
+* **challenges:** report the date each personal record was set ([#432](https://github.com/fudio101/garmin_mcp/issues/432)) ([33824bb](https://github.com/fudio101/garmin_mcp/commit/33824bb517a0dd70e8f41a50016273760cf249ef))
+* **courses:** real activity typeIds, escaped GPX, safe output path, confirm before delete ([#435](https://github.com/fudio101/garmin_mcp/issues/435)) ([d937eb3](https://github.com/fudio101/garmin_mcp/commit/d937eb36ff241487d1b7b7ab9b1fff1d4c9bc2ee))
+* **devices:** summarise the real solar payload in get_device_solar_data ([#424](https://github.com/fudio101/garmin_mcp/issues/424)) ([110dffb](https://github.com/fudio101/garmin_mcp/commit/110dffb0d58f7e45c0d73e5728b810441794e67a))
+* **fit:** decode Di2 gear data and L/R power balance per the FIT profile ([#418](https://github.com/fudio101/garmin_mcp/issues/418)) ([b997b6c](https://github.com/fudio101/garmin_mcp/commit/b997b6cbb7f915ee18e951ac0e664d6daf163d3b))
+* **gear:** label default activity types by real typeId and list every default ([#431](https://github.com/fudio101/garmin_mcp/issues/431)) ([2367507](https://github.com/fudio101/garmin_mcp/commit/236750793ad8314b4e1b774e11c6fe0b8afb4fd8))
+* **health:** fix morning readiness fields, intensity total, and body-comp clustering ([#429](https://github.com/fudio101/garmin_mcp/issues/429)) ([13fabdf](https://github.com/fudio101/garmin_mcp/commit/13fabdf8a2b60b65f36fe455e21468c668a85be1))
+* **nutrition:** rename-safe update_custom_food and structured upsert_and_log errors ([#428](https://github.com/fudio101/garmin_mcp/issues/428)) ([aa206ab](https://github.com/fudio101/garmin_mcp/commit/aa206abc3ec4841d85c24f2457744fdacc563ff2))
+* **server:** raise a copy of the stored login error on each tool call ([#426](https://github.com/fudio101/garmin_mcp/issues/426)) ([4749f27](https://github.com/fudio101/garmin_mcp/commit/4749f27eda6f09d8483138e65852ff0e2f337061))
+* **server:** silence stderr only for the login thread ([#412](https://github.com/fudio101/garmin_mcp/issues/412)) ([08bee29](https://github.com/fudio101/garmin_mcp/commit/08bee2984aeb8dd861b3e066e8a1aa2be85724e9))
+* **skills:** babysit-prs CI check and contributor credit ([#438](https://github.com/fudio101/garmin_mcp/issues/438)) ([adfef30](https://github.com/fudio101/garmin_mcp/commit/adfef30b29e26c7271d4cbf9a9101f9796db84a8))
+* **training:** lactate-threshold HR history, load-balance device, load-trend wording ([#427](https://github.com/fudio101/garmin_mcp/issues/427)) ([1204897](https://github.com/fudio101/garmin_mcp/commit/1204897f6ef8d914438e5831735577a523ca1e01))
+* **weight:** keep caller timestamps and report deletes that did nothing ([#430](https://github.com/fudio101/garmin_mcp/issues/430)) ([327f334](https://github.com/fudio101/garmin_mcp/commit/327f334dd759fd212cadb10d8e8cdc8621a1e46d))
+* **workouts:** per-entry schedule_week errors, strict dates, null sportType, full library paging ([#433](https://github.com/fudio101/garmin_mcp/issues/433)) ([968fa19](https://github.com/fudio101/garmin_mcp/commit/968fa192ec4bb63b2e886490fb8e78c6d137a2b3))
+* **workouts:** walking sport ID, single recovery HR bound, pace units in docs ([#434](https://github.com/fudio101/garmin_mcp/issues/434)) ([5813ca4](https://github.com/fudio101/garmin_mcp/commit/5813ca4012dd3087cce36cbbd09c5b181ac5c257))
+* **write_errors:** report a 5xx after the write was sent as possibly committed ([#423](https://github.com/fudio101/garmin_mcp/issues/423)) ([9258f68](https://github.com/fudio101/garmin_mcp/commit/9258f68c5b7cc373ff364a1934f8327942e41546))
+
 ## [0.3.0](https://github.com/fudio101/garmin_mcp/compare/0.2.0...0.3.0) (2026-10-12)
 
 
