@@ -367,9 +367,11 @@ The easiest way to add this server to Claude Desktop is via the `.dxt` Desktop E
 
 The extension installs and runs the server automatically, but you must authenticate with Garmin once before data can be fetched:
 
+<!-- x-release-please-start-version -->
 ```bash
-uvx --python 3.12 --from git+https://github.com/Taxuspt/garmin_mcp garmin-mcp-auth
+uvx --python 3.12 --with "mcp<2" --from https://github.com/Taxuspt/garmin_mcp/archive/refs/tags/0.1.0.tar.gz garmin-mcp-auth
 ```
+<!-- x-release-please-end -->
 
 This saves OAuth tokens to `~/.garminconnect`. After that the server works without any credentials in the config.
 
