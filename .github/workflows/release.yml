@@ -7,8 +7,12 @@ name: Release & Docker image
 #      without Garmin credentials, then pushed to GHCR by digest.
 #   3. The per-arch digests are merged into one multi-arch tag set and a signed
 #      build provenance attestation is published.
-# Pull requests run steps 1-2 without pushing anything. A manual run
-# (workflow_dispatch) republishes the image of an existing release tag.
+#   4. For a release, mcpb.yml builds and tests the Claude Desktop bundle and
+#      attaches it to the GitHub release. It runs alongside 2-3; neither side
+#      waits for the other.
+# Pull requests run steps 1-2 without pushing anything (mcpb.yml runs on its
+# own for them). A manual run (workflow_dispatch) republishes the image of an
+# existing release tag and attaches the bundle if the release lacks it.
 #
 # Releases created by release-please use GITHUB_TOKEN, which doesn't trigger
 # other workflows (no `on: release`), so publishing happens in this workflow.
@@ -24,6 +28,11 @@ on:
         description: Existing release tag to (re)publish, e.g. 0.2.0
         required: true
         type: string
+      replace_assets:
+        description: Replace the release's garmin-mcp.mcpb if it already has one
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -58,6 +67,8 @@ jobs:
       contents: read
     outputs:
       image: ${{ steps.target.outputs.image }}
+      release: ${{ steps.target.outputs.release }}
+      version: ${{ steps.target.outputs.version }}
       ref: ${{ steps.target.outputs.ref }}
       json: ${{ steps.meta.outputs.json }}
       labels: ${{ steps.meta.outputs.labels }}
@@ -267,3 +278,17 @@ jobs:
         push-to-registry: true
         # Storage records only exist for organization-owned repositories.
         create-storage-record: false
+
+  mcpb:
+    needs: meta
+    if: ${{ !cancelled() && needs.meta.outputs.release == 'true' }}
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/mcpb.yml
+    with:
+      ref: ${{ needs.meta.outputs.ref }}
+      version: ${{ needs.meta.outputs.version }}
+      publish: true
+      replace_assets: ${{ inputs.replace_assets || false }}
