@@ -52,7 +52,7 @@ This repository uses GitHub Actions for continuous integration and security chec
 1. `dependency-check` - Security and dependency validation
 2. `code-quality` - Code syntax and import checks
 
-### 4. Release & Docker image (`release.yml`)
+### 4. Release (`release.yml`)
 
 **Triggers:**
 - Pushes to `main`
@@ -82,11 +82,11 @@ Publishing runs in this workflow rather than on `release: published` because rel
 
 **Cutting a release:** merge the open `chore(main): release X.Y.Z` PR. Because `GITHUB_TOKEN` opened it, pull request checks don't run on that PR on their own; it only changes version numbers and the changelog, and the image is still smoke-tested after the merge.
 
-**If a release has no image** (the run failed or was cancelled after the tag was created): Actions → Release & Docker image → Run workflow, with the release tag as `version`. Republishing an older release only updates its own `X.Y.Z` tag (and `X.Y` if it is still the newest patch of that minor version); `latest` stays on the newest release.
+**If a release has no image** (the run failed or was cancelled after the tag was created): Actions → Release → Run workflow, with the release tag as `version`. Republishing an older release only updates its own `X.Y.Z` tag (and `X.Y` if it is still the newest patch of that minor version); `latest` stays on the newest release.
 
 **If a release has no bundle:** open the failed run and use *Re-run failed jobs*. It reuses the run's release outputs and doesn't touch the image. If that run is gone, the manual run above also attaches the bundle when the release lacks it, but it republishes the image as well. Set `replace_assets` only to replace a bundle that is already attached: packing isn't byte-reproducible, so the replacement gets a new digest.
 
-### 5. Claude Desktop bundle (`mcpb.yml`)
+### 5. MCP Bundle (`mcpb.yml`)
 
 **Triggers:**
 - Pull requests to `main` or `master`

@@ -1,4 +1,4 @@
-name: Release & Docker image
+name: Release
 
 # On every push to main:
 #   1. release-please opens/updates the release PR, or tags a release when that
@@ -43,6 +43,7 @@ permissions: {}
 
 jobs:
   release-please:
+    name: Release PR and tag
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
@@ -60,6 +61,7 @@ jobs:
       uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
 
   meta:
+    name: Resolve version and tags
     needs: release-please
     if: ${{ !cancelled() && needs.release-please.result != 'failure' }}
     runs-on: ubuntu-latest
@@ -145,6 +147,7 @@ jobs:
           org.opencontainers.image.revision=${{ steps.target.outputs.sha }}
 
   build:
+    name: Docker image (${{ matrix.arch }})
     needs: meta
     if: ${{ !cancelled() && needs.meta.result == 'success' }}
     strategy:
@@ -226,6 +229,7 @@ jobs:
         retention-days: 1
 
   publish:
+    name: Publish Docker image
     needs: [ meta, build ]
     if: ${{ !cancelled() && github.event_name != 'pull_request' && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
@@ -280,6 +284,7 @@ jobs:
         create-storage-record: false
 
   mcpb:
+    name: MCP Bundle
     needs: meta
     if: ${{ !cancelled() && needs.meta.outputs.release == 'true' }}
     permissions:
