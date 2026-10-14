@@ -375,11 +375,13 @@ This saves OAuth tokens to `~/.garminconnect`. After that the server works witho
 
 > **Note:** Tokens are valid for approximately 6 months. Re-run `garmin-mcp-auth` when they expire.
 
-### Build the `.dxt` yourself
+### Build the bundle yourself
 
 ```bash
-bash scripts/build_dxt.sh   # produces garmin-mcp.dxt in the repo root
+python3 scripts/build_mcpb.py   # needs git, uv and Node.js 18+; writes dist/garmin-mcp.mcpb
 ```
+
+It builds the committed tree (`HEAD`), so commit your changes first.
 
 ---
 
