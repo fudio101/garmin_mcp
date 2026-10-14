@@ -1,4 +1,4 @@
-name: Claude Desktop bundle
+name: MCP Bundle
 
 # Builds garmin-mcp.mcpb with scripts/build_mcpb.py, then installs and starts
 # it the way Claude Desktop does (scripts/mcpb_smoke_test.py) on Linux, macOS
@@ -42,6 +42,7 @@ permissions: {}
 
 jobs:
   pack:
+    name: Build bundle
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -105,6 +106,7 @@ jobs:
         retention-days: 7
 
   smoke:
+    name: Smoke test (${{ matrix.os }}, uv ${{ matrix.uv }})
     needs: pack
     if: needs.pack.outputs.skip == 'false'
     strategy:
@@ -150,6 +152,7 @@ jobs:
       run: '"$PYTHON" scripts/mcpb_smoke_test.py "$RUNNER_TEMP/bundle/garmin-mcp.mcpb"'
 
   attach:
+    name: Upload to release
     needs: [ pack, smoke ]
     if: inputs.publish && needs.pack.outputs.skip == 'false'
     runs-on: ubuntu-latest
