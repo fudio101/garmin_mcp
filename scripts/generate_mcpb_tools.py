@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate mcpb/manifest.json's "tools" array from the actual registered tools.
 
-The manifest's tools list is for Desktop Extension UIs to display; it drifted
+The manifest's tools list is for MCP Bundle UIs to display; it drifted
 to 8 hand-picked entries while the server grew to ~150 tools (#340). This
 builds the same FastMCP app main() builds (same module list and order, no
 tool filter), against a mocked Garmin client, and writes every tool's name
@@ -57,6 +57,12 @@ MODULES = [
 MANIFEST_PATH = Path(__file__).resolve().parent.parent / "mcpb" / "manifest.json"
 
 
+def serialize_manifest(manifest: dict) -> str:
+    # Non-ASCII stays raw, the way release-please's JSON updater writes the file
+    # when it bumps "version", so a release PR only changes that one line.
+    return json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
+
+
 def _first_line(description: str) -> str:
     return (description or "").strip().splitlines()[0].strip() if description else ""
 
@@ -77,9 +83,9 @@ async def _collect_tools() -> list[dict]:
 
 def main() -> None:
     tools = asyncio.run(_collect_tools())
-    manifest = json.loads(MANIFEST_PATH.read_text())
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     manifest["tools"] = tools
-    MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n")
+    MANIFEST_PATH.write_text(serialize_manifest(manifest), encoding="utf-8")
     print(f"Wrote {len(tools)} tools to {MANIFEST_PATH}")
 
 

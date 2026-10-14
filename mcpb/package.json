@@ -1,0 +1,8 @@
+{
+  "name": "garmin-mcp-bundle-tools",
+  "private": true,
+  "description": "Pins the MCPB CLI that scripts/build_mcpb.py uses to pack the Claude Desktop bundle.",
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2"
+  }
+}

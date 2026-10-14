@@ -9,6 +9,10 @@ dist/
 build/
 *.egg
 
+# MCP Bundle builds and the pinned packer (see scripts/build_mcpb.py)
+*.mcpb
+mcpb/node_modules/
+
 # Virtual environments
 .env
 .venv/
