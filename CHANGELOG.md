@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/fudio101/garmin_mcp/compare/0.4.0...0.5.0) (2026-10-14)
+
+
+### Features
+
+* **mcpb:** replace the Desktop Extension with an MCP Bundle built on release ([#7](https://github.com/fudio101/garmin_mcp/issues/7)) ([e710ba8](https://github.com/fudio101/garmin_mcp/commit/e710ba8b9c2131510c898979bcb449614b31601a))
+
 ## [0.4.0](https://github.com/fudio101/garmin_mcp/compare/0.3.0...0.4.0) (2026-10-13)
 
 

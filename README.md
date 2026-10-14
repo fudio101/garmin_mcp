@@ -386,7 +386,7 @@ The server needs Garmin tokens once; they are saved in the token directory (`~/.
 
   <!-- x-release-please-start-version -->
   ```bash
-  uvx --python 3.12 --with "mcp<2" --from https://github.com/Taxuspt/garmin_mcp/archive/refs/tags/0.4.0.tar.gz garmin-mcp-auth
+  uvx --python 3.12 --with "mcp<2" --from https://github.com/Taxuspt/garmin_mcp/archive/refs/tags/0.5.0.tar.gz garmin-mcp-auth
   ```
   <!-- x-release-please-end -->
 
