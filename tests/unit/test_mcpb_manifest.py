@@ -1,20 +1,18 @@
-"""Regression tests for the Desktop Extension manifest."""
+"""Regression tests for the MCP Bundle manifest."""
 
 import asyncio
 import json
 import sys
 from pathlib import Path
-from zipfile import ZipFile
 
 
 REPO_ROOT = Path(__file__).parents[2]
 MANIFEST_PATH = REPO_ROOT / "mcpb" / "manifest.json"
-BUNDLE_PATH = REPO_ROOT / "garmin-mcp.dxt"
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 
 def _read_manifest():
-    return json.loads(MANIFEST_PATH.read_text())
+    return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
 
 def test_token_path_default_does_not_require_nested_interpolation():
@@ -31,13 +29,13 @@ def test_user_config_defaults_do_not_contain_template_variables():
         assert all("${" not in value for value in values if isinstance(value, str))
 
 
-def test_bundled_manifest_matches_source_manifest():
-    manifest = _read_manifest()
-    with ZipFile(BUNDLE_PATH) as bundle:
-        assert bundle.namelist() == ["manifest.json"]
-        bundled_manifest = json.loads(bundle.read("manifest.json"))
+def test_manifest_file_is_canonically_serialized():
+    """release-please rewrites the whole file when it bumps the version; if the
+    committed text isn't in the same form, every release PR churns other lines."""
+    from generate_mcpb_tools import serialize_manifest
 
-    assert bundled_manifest == manifest
+    text = MANIFEST_PATH.read_text(encoding="utf-8")
+    assert text == serialize_manifest(json.loads(text)), "run scripts/generate_mcpb_tools.py"
 
 
 def test_tools_list_matches_registered_tools():
@@ -45,4 +43,16 @@ def test_tools_list_matches_registered_tools():
     from generate_mcpb_tools import _collect_tools
 
     manifest = _read_manifest()
-    assert manifest["tools"] == asyncio.run(_collect_tools())
+    assert manifest["tools"] == asyncio.run(_collect_tools()), "run scripts/generate_mcpb_tools.py"
+
+
+def test_bundle_allowlist_matches_docker_allowlist():
+    """The bundle and the image ship the same project files; the bundle adds
+    only its own files from mcpb/."""
+    import build_mcpb
+
+    dockerignore = (REPO_ROOT / ".dockerignore").read_text().splitlines()
+    docker_files = {line[1:].rstrip("/") for line in dockerignore if line.startswith("!")}
+
+    assert set(build_mcpb.ROOT_FILES + [build_mcpb.SOURCE_DIR]) == docker_files
+    assert all((REPO_ROOT / "mcpb" / name).is_file() for name in build_mcpb.BUNDLE_FILES)
