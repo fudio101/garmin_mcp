@@ -355,31 +355,88 @@ coexisting custom range, so the upload tools reject that ambiguous shape.
 
 ## One-click Install (Claude Desktop)
 
-The easiest way to add this server to Claude Desktop is via the `.dxt` Desktop Extension file — no JSON editing required.
+The easiest way to add this server to Claude Desktop is the `garmin-mcp.mcpb` bundle (MCP Bundle, the format that replaced `.dxt` Desktop Extensions): no JSON editing and no Python setup. Claude Desktop installs Python 3.12 and the locked dependencies itself, and each bundle runs exactly the release it came from.
 
-### Download and install
+### Install the bundle
 
-1. Download the latest `garmin-mcp.dxt` from the [Releases page](https://github.com/Taxuspt/garmin_mcp/releases).
-2. Drag the `.dxt` file into the Claude Desktop window, **or** double-click it, **or** go to **Settings → Extensions → Install Extension** and select the file.
-3. Claude Desktop will prompt you for optional configuration (token path, email, password).
+1. Download [`garmin-mcp.mcpb`](https://github.com/Taxuspt/garmin_mcp/releases/latest/download/garmin-mcp.mcpb) from the latest release. Older releases shipped `garmin-mcp.dxt` instead; if the link returns 404, the latest release has no bundle yet, so use the [JSON configuration](#quick-start-for-mcp-clients) until the next one.
+2. Double-click the file, **or** drag it into the Claude Desktop window, **or** go to **Settings → Extensions → Install Extension** and select it.
+3. Claude Desktop asks for optional settings (token directory, email, password). See [Sign in to Garmin](#sign-in-to-garmin) for what to fill in.
 
-### First-time authentication
+The first install downloads about 50 MB (Python and dependencies) from pypi.org, files.pythonhosted.org and github.com.
 
-The extension installs and runs the server automatically, but you must authenticate with Garmin once before data can be fetched:
+### Sign in to Garmin
+
+The server needs Garmin tokens once; they are saved in the token directory (`~/.garminconnect` by default) and last about 6 months. Pick one way:
+
+- **A. Account without MFA:** enter your Garmin email and password in the extension settings. The server signs in on its own and saves the tokens; after the first successful request you can clear the password field again.
+- **B. Account with MFA:** run the sign-in tool that the bundle installed, once, in a terminal. It uses the same locked dependencies as the server:
+
+  ```bash
+  # macOS
+  "$HOME/Library/Application Support/Claude/Claude Extensions/local.mcpb.alexandre-domingues.garmin-mcp/.venv/bin/garmin-mcp-auth"
+  ```
+
+  ```powershell
+  # Windows (PowerShell)
+  & "$env:APPDATA\Claude\Claude Extensions\local.mcpb.alexandre-domingues.garmin-mcp\.venv\Scripts\garmin-mcp-auth.exe"
+  ```
+
+- **C. Account with MFA, [uv](https://docs.astral.sh/uv/getting-started/installation/) installed:** run the sign-in tool from the release instead. No git is needed, but uvx resolves the dependencies itself rather than using the bundle's lock, so if it fails, use B:
+
+  <!-- x-release-please-start-version -->
+  ```bash
+  uvx --python 3.12 --with "mcp<2" --from https://github.com/Taxuspt/garmin_mcp/archive/refs/tags/0.4.0.tar.gz garmin-mcp-auth
+  ```
+  <!-- x-release-please-end -->
+
+B and C prompt for email, password and MFA code. If you changed the token directory in the extension settings, pass the same directory with `--token-path`.
+
+Then restart the extension: turn it off and on again in **Settings → Extensions**, or quit and reopen Claude. Repeat the sign-in when the tokens expire.
+
+### Updating, rolling back and uninstalling
+
+- **Update:** install the newer `garmin-mcp.mcpb` over the old one. Your settings are kept.
+- **Roll back:** install an older bundle from `https://github.com/Taxuspt/garmin_mcp/releases/download/<version>/garmin-mcp.mcpb`.
+- **Uninstall:** remove the extension in **Settings → Extensions**. To also delete your tokens and settings, remove `~/.garminconnect`, `~/.garminconnect_base64` and `~/.garminconnect_fit_config.json` (`%USERPROFILE%\...` on Windows). `uv cache clean` frees the downloaded packages.
+
+### Upgrading from `garmin-mcp.dxt`
+
+The bundle installs next to the old `.dxt` extension instead of replacing it, so remove the old one in **Settings → Extensions** first, or you get two Garmin servers. Tokens in `~/.garminconnect` keep working; if you had set a custom token directory, enter it again. The `.dxt` always ran the latest code from `main`; the bundle runs a fixed release. To keep following `main`, use the [JSON configuration](#step-2-configure-claude-desktop) instead.
+
+### When to use the JSON configuration instead
+
+The bundle covers one account with the default settings. Use the [JSON configuration](#quick-start-for-mcp-clients) if you need [more than one Garmin account](#using-more-than-one-garmin-account), [Garmin Connect China](#garmin-connect-china-garmincn), [tool filtering](#tool-filtering) (for example a read-only account), or other environment variables such as `GARMIN_MCP_CALL_TIMEOUT`.
+
+### Files, privacy and verification
+
+- **Downloaded files:** the bundle's working directory is its extension folder, which is replaced on every update. The first activity download asks where to save files and suggests the current directory, which is that folder: choose one outside it instead (`set_fit_download_dir` remembers it), or pass `output_dir`. Course GPX files go to `courses/` inside the extension folder unless you pass `output_path`.
+- **Privacy:** your data only travels between your computer and Garmin Connect. Claude Desktop keeps the password in your operating system's keychain, tokens are stored in the token directory readable only by you, and nothing is sent to this project.
+- **Verify a download (optional):** each release shows the bundle's sha256 digest, and the bundle carries a signed build provenance attestation:
+
+  ```bash
+  gh attestation verify garmin-mcp.mcpb --repo Taxuspt/garmin_mcp
+  ```
+
+### Troubleshooting the bundle
+
+| Problem | What to do |
+|---|---|
+| Install fails with `Invalid enum value ... 'uv'` or a manifest version error | Your Claude Desktop is too old for uv bundles; update it. |
+| Tools fail with "Run 'garmin-mcp-auth'" | Sign in with one of the [three ways above](#sign-in-to-garmin), then restart the extension. |
+| You have set `UV_PYTHON_DOWNLOADS=never` | Install Python 3.12 yourself; uv may not download it. |
+| Install stalls or fails behind a firewall | Allow pypi.org, files.pythonhosted.org and github.com. |
+| Windows | The bundle is smoke-tested on Windows in CI but not yet in Claude Desktop. Long paths or [Smart App Control](#windows-smart-app-control-blocks-uv--uvx) may get in the way. |
+
+Logs: on macOS `~/Library/Logs/Claude/mcp-server-Garmin Connect.log`, plus `main.log` for install problems (lines starting with `[UV Runtime]` or `[UV Discovery]`); on Windows `%APPDATA%\Claude\logs`.
+
+### Build the bundle yourself
 
 ```bash
-uvx --python 3.12 --from git+https://github.com/Taxuspt/garmin_mcp garmin-mcp-auth
+python3 scripts/build_mcpb.py   # needs git, uv and Node.js 18+; writes dist/garmin-mcp.mcpb
 ```
 
-This saves OAuth tokens to `~/.garminconnect`. After that the server works without any credentials in the config.
-
-> **Note:** Tokens are valid for approximately 6 months. Re-run `garmin-mcp-auth` when they expire.
-
-### Build the `.dxt` yourself
-
-```bash
-bash scripts/build_dxt.sh   # produces garmin-mcp.dxt in the repo root
-```
+It builds the committed tree (`HEAD`), so commit your changes first.
 
 ---
 

@@ -6,7 +6,7 @@ from mcp.server.fastmcp import FastMCP
 
 import garmin_mcp
 from garmin_mcp import tool_annotations
-from scripts.generate_dxt_tools import MODULES
+from scripts.generate_mcpb_tools import MODULES
 
 
 def test_annotation_registry_is_exhaustive_and_disjoint():
