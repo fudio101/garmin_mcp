@@ -19,3 +19,11 @@ updates:
       interval: weekly
     commit-message:
       prefix: build
+
+  # Bumps the mcpb CLI (and its lockfile) that packs the Claude Desktop bundle.
+  - package-ecosystem: npm
+    directory: /mcpb
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
