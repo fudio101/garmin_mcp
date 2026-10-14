@@ -12,6 +12,15 @@
           "type": "toml",
           "path": "uv.lock",
           "jsonpath": "$.package[?(@.name.value=='garmin-mcp')].version"
+        },
+        {
+          "type": "json",
+          "path": "mcpb/manifest.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
         }
       ]
     }
