@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate dxt/manifest.json's "tools" array from the actual registered tools.
+"""Regenerate mcpb/manifest.json's "tools" array from the actual registered tools.
 
 The manifest's tools list is for Desktop Extension UIs to display; it drifted
 to 8 hand-picked entries while the server grew to ~150 tools (#340). This
@@ -54,7 +54,7 @@ MODULES = [
     calendar_events,
 ]
 
-MANIFEST_PATH = Path(__file__).resolve().parent.parent / "dxt" / "manifest.json"
+MANIFEST_PATH = Path(__file__).resolve().parent.parent / "mcpb" / "manifest.json"
 
 
 def _first_line(description: str) -> str:
