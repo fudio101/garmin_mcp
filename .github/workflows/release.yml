@@ -1,4 +1,4 @@
-name: Release & Docker image
+name: Release
 
 # On every push to main:
 #   1. release-please opens/updates the release PR, or tags a release when that
@@ -7,8 +7,12 @@ name: Release & Docker image
 #      without Garmin credentials, then pushed to GHCR by digest.
 #   3. The per-arch digests are merged into one multi-arch tag set and a signed
 #      build provenance attestation is published.
-# Pull requests run steps 1-2 without pushing anything. A manual run
-# (workflow_dispatch) republishes the image of an existing release tag.
+#   4. For a release, mcpb.yml builds and tests the Claude Desktop bundle and
+#      attaches it to the GitHub release. It runs alongside 2-3; neither side
+#      waits for the other.
+# Pull requests run steps 1-2 without pushing anything (mcpb.yml runs on its
+# own for them). A manual run (workflow_dispatch) republishes the image of an
+# existing release tag and attaches the bundle if the release lacks it.
 #
 # Releases created by release-please use GITHUB_TOKEN, which doesn't trigger
 # other workflows (no `on: release`), so publishing happens in this workflow.
@@ -24,6 +28,11 @@ on:
         description: Existing release tag to (re)publish, e.g. 0.2.0
         required: true
         type: string
+      replace_assets:
+        description: Replace the release's garmin-mcp.mcpb if it already has one
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,6 +43,7 @@ permissions: {}
 
 jobs:
   release-please:
+    name: Release PR and tag
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
@@ -51,6 +61,7 @@ jobs:
       uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
 
   meta:
+    name: Resolve version and tags
     needs: release-please
     if: ${{ !cancelled() && needs.release-please.result != 'failure' }}
     runs-on: ubuntu-latest
@@ -58,6 +69,8 @@ jobs:
       contents: read
     outputs:
       image: ${{ steps.target.outputs.image }}
+      release: ${{ steps.target.outputs.release }}
+      version: ${{ steps.target.outputs.version }}
       ref: ${{ steps.target.outputs.ref }}
       json: ${{ steps.meta.outputs.json }}
       labels: ${{ steps.meta.outputs.labels }}
@@ -134,6 +147,7 @@ jobs:
           org.opencontainers.image.revision=${{ steps.target.outputs.sha }}
 
   build:
+    name: Docker image (${{ matrix.arch }})
     needs: meta
     if: ${{ !cancelled() && needs.meta.result == 'success' }}
     strategy:
@@ -215,6 +229,7 @@ jobs:
         retention-days: 1
 
   publish:
+    name: Publish Docker image
     needs: [ meta, build ]
     if: ${{ !cancelled() && github.event_name != 'pull_request' && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
@@ -267,3 +282,18 @@ jobs:
         push-to-registry: true
         # Storage records only exist for organization-owned repositories.
         create-storage-record: false
+
+  mcpb:
+    name: MCP Bundle
+    needs: meta
+    if: ${{ !cancelled() && needs.meta.outputs.release == 'true' }}
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/mcpb.yml
+    with:
+      ref: ${{ needs.meta.outputs.ref }}
+      version: ${{ needs.meta.outputs.version }}
+      publish: true
+      replace_assets: ${{ inputs.replace_assets || false }}
