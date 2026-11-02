@@ -71,10 +71,16 @@ jobs:
       if: steps.release.outputs.release_created != 'true'
       env:
         GH_TOKEN: ${{ github.token }}
+        RELEASE_PR: ${{ steps.release.outputs.pr }}
       run: |
-        pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --base "$GITHUB_REF_NAME" \
-          --label 'autorelease: pending' --json number,headRefName \
-          --jq 'map(select(.headRefName | startswith("release-please--"))) | .[0].number // empty')
+        # The output is empty when an open PR needed no update. Listing alone
+        # isn't enough: a PR opened seconds ago may not be listed yet.
+        pr=$(jq -r '.number // empty' <<< "${RELEASE_PR:-null}")
+        if [ -z "$pr" ]; then
+          pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --base "$GITHUB_REF_NAME" \
+            --label 'autorelease: pending' --json number,headRefName \
+            --jq 'map(select(.headRefName | startswith("release-please--"))) | .[0].number // empty')
+        fi
         if [ -z "$pr" ]; then
           echo "No release PR to merge."
           exit 0
