@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/fudio101/garmin_mcp/compare/0.6.1...0.6.2) (2026-11-02)
+
+
+### Bug Fixes
+
+* **release:** don't merge the release PR when main has moved ([4f33567](https://github.com/fudio101/garmin_mcp/commit/4f335675c2c28b9a9be3fdb8ca54387bed7462ea))
+
 ## [0.6.1](https://github.com/fudio101/garmin_mcp/compare/0.6.0...0.6.1) (2026-11-02)
 
 
