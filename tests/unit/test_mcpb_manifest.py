@@ -32,18 +32,18 @@ def test_user_config_defaults_do_not_contain_template_variables():
 def test_manifest_file_is_canonically_serialized():
     """release-please rewrites the whole file when it bumps the version; if the
     committed text isn't in the same form, every release PR churns other lines."""
-    from generate_mcpb_tools import serialize_manifest
+    from generate_dxt_tools import serialize_manifest
 
     text = MANIFEST_PATH.read_text(encoding="utf-8")
-    assert text == serialize_manifest(json.loads(text)), "run scripts/generate_mcpb_tools.py"
+    assert text == serialize_manifest(json.loads(text)), "run scripts/generate_dxt_tools.py"
 
 
 def test_tools_list_matches_registered_tools():
     """The manifest's tools list must track the server's actual tool set (#340)."""
-    from generate_mcpb_tools import _collect_tools
+    from generate_dxt_tools import _collect_tools
 
     manifest = _read_manifest()
-    assert manifest["tools"] == asyncio.run(_collect_tools()), "run scripts/generate_mcpb_tools.py"
+    assert manifest["tools"] == asyncio.run(_collect_tools()), "run scripts/generate_dxt_tools.py"
 
 
 def test_bundle_allowlist_matches_docker_allowlist():

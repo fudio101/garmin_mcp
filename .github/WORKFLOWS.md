@@ -126,7 +126,7 @@ python3 scripts/build_mcpb.py
 python3 scripts/mcpb_smoke_test.py dist/garmin-mcp.mcpb
 
 # After changing tools, refresh the bundle manifest's tools list
-uv run python scripts/generate_mcpb_tools.py
+uv run python scripts/generate_dxt_tools.py
 ```
 
 ## Skipped Tests
