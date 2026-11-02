@@ -1,9 +1,11 @@
 name: Release
 
 # On every push to main:
-#   1. release-please opens/updates the release PR. If there is one, this
-#      workflow merges it right away and tags the release, so every push with
-#      a `feat:` or `fix:` commit ships without a manual merge.
+#   1. release-please opens/updates the release PR, or tags a release when that
+#      PR is merged. With the repository variable AUTO_RELEASE=true, this
+#      workflow also merges the PR right away and tags the release in this run,
+#      so every push with a user-facing commit ships without a manual merge. If
+#      the merge is refused, the PR stays open for a manual merge.
 #   2. The image is built natively on amd64 and arm64 runners, smoke-tested
 #      without Garmin credentials, then pushed to GHCR by digest.
 #   3. The per-arch digests are merged into one multi-arch tag set and a signed
@@ -11,8 +13,8 @@ name: Release
 #   4. For a release, mcpb.yml builds and tests the Claude Desktop bundle and
 #      attaches it to the GitHub release. It runs alongside 2-3; neither side
 #      waits for the other.
-# Pull requests run steps 1-2 without pushing anything (mcpb.yml runs on its
-# own for them). A manual run (workflow_dispatch) republishes the image of an
+# Pull requests run step 2 without pushing anything (mcpb.yml runs on its own
+# for them). A manual run (workflow_dispatch) republishes the image of an
 # existing release tag and attaches the bundle if the release lacks it. A daily
 # run does step 1 and publishes only if that created a release, in case a push
 # (for example from Sync fork) started no run.
@@ -62,15 +64,23 @@ jobs:
       sha: ${{ steps.tagged.outputs.sha || steps.release.outputs.sha }}
 
     steps:
+    - name: Remember the head of main
+      id: head
+      if: vars.AUTO_RELEASE == 'true'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: echo "sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_REF_NAME" --jq .sha)" >> "$GITHUB_OUTPUT"
+
     - name: Create release PR or release
       id: release
       uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
 
     - name: Merge the release PR
       id: merge
-      if: steps.release.outputs.release_created != 'true'
+      if: vars.AUTO_RELEASE == 'true' && steps.release.outputs.release_created != 'true'
       env:
         GH_TOKEN: ${{ github.token }}
+        HEAD_BEFORE: ${{ steps.head.outputs.sha }}
         RELEASE_PR: ${{ steps.release.outputs.pr }}
       run: |
         # The output is empty when an open PR needed no update. Listing alone
@@ -85,7 +95,18 @@ jobs:
           echo "No release PR to merge."
           exit 0
         fi
-        gh pr merge "$pr" --repo "$GITHUB_REPOSITORY" --squash
+        # A commit that landed after release-please read the history would ship
+        # without a changelog entry or version bump. Its own run handles it.
+        if [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_REF_NAME" --jq .sha)" != "$HEAD_BEFORE" ]; then
+          echo "main moved during this run; the next run merges the release PR."
+          exit 0
+        fi
+        # A refused merge (branch rules, for example) must not stop the image of
+        # the pushed commit: the PR stays open for a manual merge.
+        if ! gh pr merge "$pr" --repo "$GITHUB_REPOSITORY" --squash; then
+          echo "::warning::Could not merge release PR #$pr; merge it by hand to release."
+          exit 0
+        fi
         # release-please looks the merged PR up next; give the API time to catch up.
         for _ in 1 2 3 4 5 6; do
           [ "$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json state --jq .state)" = MERGED ] && break
@@ -104,7 +125,7 @@ jobs:
     - name: Check the release was created
       if: steps.merge.outputs.merged == 'true' && steps.tagged.outputs.release_created != 'true'
       run: |
-        echo "::error::The release PR was merged but no release was created; the next run retries."
+        echo "::error::The release PR was merged but no release was created. Re-run this job; the next run also retries."
         exit 1
 
   meta:
@@ -169,9 +190,12 @@ jobs:
           echo "sha=$sha"
           echo "short=${sha::7}"
           echo "ref=$ref"
-          # `main` only moves when this run builds the commit main points at:
-          # the pushed commit, or the release commit it just merged on top.
-          echo "main=$([ "$EVENT" = push ] && { [ "$sha" = "$GITHUB_SHA" ] || [ "$release" = true ]; } && echo true || echo false)"
+          # `main` only moves when this run builds the commit main points at.
+          main=false
+          if [ "$EVENT" = push ] || [ "$EVENT" = schedule ]; then
+            if [ "$sha" = "$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_REF_NAME" --jq .sha)" ]; then main=true; fi
+          fi
+          echo "main=$main"
         } >> "$GITHUB_OUTPUT"
 
     - name: Compute tags and labels
