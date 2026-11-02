@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.6.0](https://github.com/fudio101/garmin_mcp/compare/0.5.0...0.6.0) (2026-11-02)
+
+
+### Features
+
+* **auth:** say why saved tokens failed to load and add garmin-mcp-auth --diagnose ([#448](https://github.com/fudio101/garmin_mcp/issues/448)) ([fa59d6c](https://github.com/fudio101/garmin_mcp/commit/fa59d6c36c9cc0256bd1275f6f35eb5f3cf59cbe))
+* **devices:** add push_workout_to_device ([#474](https://github.com/fudio101/garmin_mcp/issues/474)) ([851ab1b](https://github.com/fudio101/garmin_mcp/commit/851ab1b6f859987e51fbfcc53825af6b48a179ca))
+* **http:** optional GARMIN_MCP_HTTP_TOKEN bearer auth for the HTTP transports ([#451](https://github.com/fudio101/garmin_mcp/issues/451)) ([be9930f](https://github.com/fudio101/garmin_mcp/commit/be9930fcd430297784a1c9477073b1573af77709))
+* **server:** add GARMIN_TOOL_PROFILE with built-in tool subsets ([#450](https://github.com/fudio101/garmin_mcp/issues/450)) ([63f3c4c](https://github.com/fudio101/garmin_mcp/commit/63f3c4cbb4dcc3d78a676706065ce18be5f0c3b5))
+* **workouts:** add reschedule_workout ([#475](https://github.com/fudio101/garmin_mcp/issues/475)) ([2174dbb](https://github.com/fudio101/garmin_mcp/commit/2174dbb38c8af6a952bc575b837ec468659c3662))
+
+
+### Bug Fixes
+
+* **activities:** validate manual writes and label split timestamps ([#463](https://github.com/fudio101/garmin_mcp/issues/463)) ([dc20e79](https://github.com/fudio101/garmin_mcp/commit/dc20e7983d0c8477e3d82e618d791ef72076f21f))
+* **analysis:** analyze one leg of multisport FIT files ([#441](https://github.com/fudio101/garmin_mcp/issues/441)) ([c7c5d03](https://github.com/fudio101/garmin_mcp/commit/c7c5d037f64786393708bf369b8a59d5de9f95ba))
+* **analysis:** retain cycling data and correct power summaries ([#460](https://github.com/fudio101/garmin_mcp/issues/460)) ([dd5f8e8](https://github.com/fudio101/garmin_mcp/commit/dd5f8e8b580957537eadaab8bca5a23ffa2d780c))
+* **analysis:** use the latest weigh-in within 90 days for W/kg ([#439](https://github.com/fudio101/garmin_mcp/issues/439)) ([6ebe7a7](https://github.com/fudio101/garmin_mcp/commit/6ebe7a74dbfe213f04a0482a386f2a5fd533f29f))
+* **auth:** preserve saved tokens across optional export failures ([#473](https://github.com/fudio101/garmin_mcp/issues/473)) ([9ef6e5d](https://github.com/fudio101/garmin_mcp/commit/9ef6e5d3d3e48c52df35975c464567d07b6acdaa))
+* **auth:** reserve server stdin and preserve login diagnostics ([#472](https://github.com/fudio101/garmin_mcp/issues/472)) ([75dd18f](https://github.com/fudio101/garmin_mcp/commit/75dd18f584adae2e73371aa41d3a7016e643a7e7))
+* **fit:** derive grade from altitude and distance when the device writes none ([#442](https://github.com/fudio101/garmin_mcp/issues/442)) ([066ac5f](https://github.com/fudio101/garmin_mcp/commit/066ac5f06c44d18ab6995a17847172ffb18bc72f))
+* **health:** clarify recovery snapshots and surface source failures ([#469](https://github.com/fudio101/garmin_mcp/issues/469)) ([9092431](https://github.com/fudio101/garmin_mcp/commit/909243187f6c093c5c36dbe8a8a562bd2407e7ae))
+* **health:** preserve summary metrics and surface sleep request errors ([#453](https://github.com/fudio101/garmin_mcp/issues/453)) ([4d2b99f](https://github.com/fudio101/garmin_mcp/commit/4d2b99f9b96354a858195433a9aea0a26ecf55b0))
+* **health:** validate measurement units and preview weigh-in deletions ([#464](https://github.com/fudio101/garmin_mcp/issues/464)) ([80e65e1](https://github.com/fudio101/garmin_mcp/commit/80e65e134420aa68d3125d742a2fb536887f70be))
+* **nutrition:** preview food deletions before confirmation ([#466](https://github.com/fudio101/garmin_mcp/issues/466)) ([cf35dbb](https://github.com/fudio101/garmin_mcp/commit/cf35dbbbf9cd9173ce0496b3ae34a97a1484e901))
+* **nutrition:** report commit state for settings and library writes ([#462](https://github.com/fudio101/garmin_mcp/issues/462)) ([9b15f65](https://github.com/fudio101/garmin_mcp/commit/9b15f651fd9aa7f33386d227a9fc0bb9d884496b))
+* **nutrition:** track partial upserts and page exact food lookup ([#452](https://github.com/fudio101/garmin_mcp/issues/452)) ([85faca6](https://github.com/fudio101/garmin_mcp/commit/85faca60c95c2e3813cf8c7230f3a2d963511682))
+* **nutrition:** validate meal clocks and tolerate null search data ([#458](https://github.com/fudio101/garmin_mcp/issues/458)) ([e0af4b2](https://github.com/fudio101/garmin_mcp/commit/e0af4b27ed6310944876844d9317076bf59f97ad))
+* **profile:** distinguish accepted zone writes from confirmation failures ([#467](https://github.com/fudio101/garmin_mcp/issues/467)) ([3a658a9](https://github.com/fudio101/garmin_mcp/commit/3a658a9a6533625593e2f42ce96eeb1ad1ab65a5))
+* **responses:** correct challenge, GPX, and gear results ([#468](https://github.com/fudio101/garmin_mcp/issues/468)) ([b91e7e0](https://github.com/fudio101/garmin_mcp/commit/b91e7e080ed976492faa56ba96cc1538691e875c))
+* **server:** classify Garmin HTTP failures before adding hints ([#456](https://github.com/fudio101/garmin_mcp/issues/456)) ([af416d7](https://github.com/fudio101/garmin_mcp/commit/af416d772b5b657bee24a993b6ed396467ca43e4))
+* **server:** run tool bodies on worker threads so Garmin calls don't block the event loop ([#449](https://github.com/fudio101/garmin_mcp/issues/449)) ([1eb520b](https://github.com/fudio101/garmin_mcp/commit/1eb520b668a8795685a5ab3a59e530f9d6a5654f))
+* **tools:** let optional string args accept null ([#443](https://github.com/fudio101/garmin_mcp/issues/443)) ([38c64f3](https://github.com/fudio101/garmin_mcp/commit/38c64f3230059e58d3228233088809d6f7caff70))
+* **training:** don't crash get_endurance_score on a day without a score ([#445](https://github.com/fudio101/garmin_mcp/issues/445)) ([b204ff2](https://github.com/fudio101/garmin_mcp/commit/b204ff2b0b79470b0606b6d6acd4204fb0a8572e))
+* **training:** preserve zero values and normalize metric responses ([#457](https://github.com/fudio101/garmin_mcp/issues/457)) ([e1cb61a](https://github.com/fudio101/garmin_mcp/commit/e1cb61a55c6a7f86d2c22596e1df1f00cb3395a2))
+* **training:** retain load focus and avoid unsupported-device assumptions ([#470](https://github.com/fudio101/garmin_mcp/issues/470)) ([3fdeb9b](https://github.com/fudio101/garmin_mcp/commit/3fdeb9bff26936d5cdbfbc5146c989806587d9c7))
+* **training:** surface trend failures and preserve VO2 measurement dates ([#465](https://github.com/fudio101/garmin_mcp/issues/465)) ([b42b3d8](https://github.com/fudio101/garmin_mcp/commit/b42b3d810285746d6cc998fc5548b5e0371afff2))
+* **workouts:** handle null payloads and successful schedule responses ([#454](https://github.com/fudio101/garmin_mcp/issues/454)) ([07235d2](https://github.com/fudio101/garmin_mcp/commit/07235d297f1026dc61d8019a45ee9a44bb8475be))
+* **workouts:** number repeat-group children depth-first and give every group the repeat shape ([#446](https://github.com/fudio101/garmin_mcp/issues/446)) ([337d886](https://github.com/fudio101/garmin_mcp/commit/337d886f16333dc70969dac75a678b003a6b189c))
+* **workouts:** validate builder inputs and weekly schedule results ([#459](https://github.com/fudio101/garmin_mcp/issues/459)) ([5ebb55c](https://github.com/fudio101/garmin_mcp/commit/5ebb55ccd379c40f85349faa06005c025b798ec8))
+
+
+### Documentation
+
+* **nutrition:** say update_custom_food doesn't change past log entries ([#440](https://github.com/fudio101/garmin_mcp/issues/440)) ([dfe6c3f](https://github.com/fudio101/garmin_mcp/commit/dfe6c3fa70d006582f304a9a7ae3b14b760b6140))
+
 ## [0.5.0](https://github.com/fudio101/garmin_mcp/compare/0.4.0...0.5.0) (2026-10-14)
 
 
