@@ -8,7 +8,7 @@ from mcp.server.fastmcp import FastMCP
 import garmin_mcp
 from garmin_mcp import tool_profiles
 from garmin_mcp.tool_profiles import TOOL_PROFILES, resolve_tool_profile
-from scripts.generate_dxt_tools import MODULES
+from scripts.generate_mcpb_tools import MODULES
 
 
 def _registered_tool_names():

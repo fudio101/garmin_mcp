@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 from mcp.server.fastmcp import FastMCP
 
-from scripts.generate_dxt_tools import MODULES
+from scripts.generate_mcpb_tools import MODULES
 
 
 def _accepts_null(schema):
