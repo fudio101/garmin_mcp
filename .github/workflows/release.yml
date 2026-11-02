@@ -1,8 +1,9 @@
 name: Release
 
 # On every push to main:
-#   1. release-please opens/updates the release PR, or tags a release when that
-#      PR is merged.
+#   1. release-please opens/updates the release PR. If there is one, this
+#      workflow merges it right away and tags the release, so every push with
+#      a `feat:` or `fix:` commit ships without a manual merge.
 #   2. The image is built natively on amd64 and arm64 runners, smoke-tested
 #      without Garmin credentials, then pushed to GHCR by digest.
 #   3. The per-arch digests are merged into one multi-arch tag set and a signed
@@ -12,16 +13,21 @@ name: Release
 #      waits for the other.
 # Pull requests run steps 1-2 without pushing anything (mcpb.yml runs on its
 # own for them). A manual run (workflow_dispatch) republishes the image of an
-# existing release tag and attaches the bundle if the release lacks it.
+# existing release tag and attaches the bundle if the release lacks it. A daily
+# run does step 1 and publishes only if that created a release, in case a push
+# (for example from Sync fork) started no run.
 #
 # Releases created by release-please use GITHUB_TOKEN, which doesn't trigger
-# other workflows (no `on: release`), so publishing happens in this workflow.
+# other workflows (no `on: release`, and merging the release PR starts no new
+# push run), so publishing happens in this workflow.
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main, master ]
+  schedule:
+    - cron: '37 3 * * *'
   workflow_dispatch:
     inputs:
       version:
@@ -44,21 +50,56 @@ permissions: {}
 jobs:
   release-please:
     name: Release PR and tag
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
       pull-requests: write
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      version: ${{ steps.release.outputs.version }}
-      sha: ${{ steps.release.outputs.sha }}
+      release_created: ${{ steps.tagged.outputs.release_created || steps.release.outputs.release_created }}
+      version: ${{ steps.tagged.outputs.version || steps.release.outputs.version }}
+      sha: ${{ steps.tagged.outputs.sha || steps.release.outputs.sha }}
 
     steps:
     - name: Create release PR or release
       id: release
       uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+
+    - name: Merge the release PR
+      id: merge
+      if: steps.release.outputs.release_created != 'true'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --base "$GITHUB_REF_NAME" \
+          --label 'autorelease: pending' --json number,headRefName \
+          --jq 'map(select(.headRefName | startswith("release-please--"))) | .[0].number // empty')
+        if [ -z "$pr" ]; then
+          echo "No release PR to merge."
+          exit 0
+        fi
+        gh pr merge "$pr" --repo "$GITHUB_REPOSITORY" --squash
+        # release-please looks the merged PR up next; give the API time to catch up.
+        for _ in 1 2 3 4 5 6; do
+          [ "$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json state --jq .state)" = MERGED ] && break
+          sleep 5
+        done
+        sleep 10
+        echo "merged=true" >> "$GITHUB_OUTPUT"
+
+    - name: Tag the merged release PR
+      id: tagged
+      if: steps.merge.outputs.merged == 'true'
+      uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+      with:
+        skip-github-pull-request: true
+
+    - name: Check the release was created
+      if: steps.merge.outputs.merged == 'true' && steps.tagged.outputs.release_created != 'true'
+      run: |
+        echo "::error::The release PR was merged but no release was created; the next run retries."
+        exit 1
 
   meta:
     name: Resolve version and tags
@@ -122,8 +163,9 @@ jobs:
           echo "sha=$sha"
           echo "short=${sha::7}"
           echo "ref=$ref"
-          # `main` only moves when this run builds the commit main points at.
-          echo "main=$([ "$EVENT" = push ] && [ "$sha" = "$GITHUB_SHA" ] && echo true || echo false)"
+          # `main` only moves when this run builds the commit main points at:
+          # the pushed commit, or the release commit it just merged on top.
+          echo "main=$([ "$EVENT" = push ] && { [ "$sha" = "$GITHUB_SHA" ] || [ "$release" = true ]; } && echo true || echo false)"
         } >> "$GITHUB_OUTPUT"
 
     - name: Compute tags and labels
@@ -149,7 +191,8 @@ jobs:
   build:
     name: Docker image (${{ matrix.arch }})
     needs: meta
-    if: ${{ !cancelled() && needs.meta.result == 'success' }}
+    # A scheduled run only builds if it created a release.
+    if: ${{ !cancelled() && needs.meta.result == 'success' && (github.event_name != 'schedule' || needs.meta.outputs.release == 'true') }}
     strategy:
       matrix:
         include:

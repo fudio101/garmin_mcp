@@ -56,11 +56,12 @@ This repository uses GitHub Actions for continuous integration and security chec
 
 **Triggers:**
 - Pushes to `main`
+- Daily schedule, in case a push (for example from Sync fork) started no run; it only builds if it created a release
 - Pull requests to `main` or `master` (build and smoke test only, nothing is pushed)
 - Manual trigger via workflow_dispatch, to republish the image of an existing release tag (and attach its bundle if missing)
 
 **What it does:**
-- [release-please](https://github.com/googleapis/release-please) keeps a release PR open with the next version and changelog, computed from [Conventional Commits](https://www.conventionalcommits.org/) (`fix:` bumps the patch version, `feat:` the minor version; while the version is `0.x`, breaking changes also bump the minor version). Merging that PR bumps `pyproject.toml`, `uv.lock`, `mcpb/manifest.json` and the pinned auth command in `README.md`, tags the release (`X.Y.Z`, no `v` prefix) and creates the GitHub release.
+- [release-please](https://github.com/googleapis/release-please) keeps a release PR open with the next version and changelog, computed from [Conventional Commits](https://www.conventionalcommits.org/) (`fix:` bumps the patch version, `feat:` the minor version; while the version is `0.x`, breaking changes also bump the minor version). The workflow merges that PR right away, which bumps `pyproject.toml`, `uv.lock`, `mcpb/manifest.json` and the pinned auth command in `README.md`, then tags the release (`X.Y.Z`, no `v` prefix) and creates the GitHub release. Pushes with only `chore:`, `ci:`, `docs:` or `test:` commits open no release PR and create no release.
 - Builds the Docker image natively on `amd64` and `arm64` runners and runs `scripts/docker_smoke_test.py` against each: MCP `initialize` + `tools/list` over streamable-http and stdio, plus the image `HEALTHCHECK`. No Garmin credentials are needed. The build itself fails if `uv.lock` is out of date (`uv sync --locked`).
 - Pushes both architectures to `ghcr.io/<owner>/garmin_mcp` and merges them into one multi-arch tag set: `main` and `sha-<commit>` on every push, plus `X.Y.Z`, `X.Y` and `latest` when a release is created (built from the tagged commit). `latest` never points at an unreleased build, and the rolling tags only move forward: `latest` follows the newest release and `X.Y` the newest patch of `X.Y`.
 - Publishes SBOM and provenance attestations with the image, plus a signed build provenance attestation (`gh attestation verify`).
@@ -80,7 +81,9 @@ Publishing runs in this workflow rather than on `release: published` because rel
 - After the first push, the GHCR package is private: Package settings → Change visibility → Public, so `docker pull` works without logging in.
 - Keep *immutable releases* off (Settings → General → Releases): the bundle is attached after release-please has published the release, which an immutable release no longer allows.
 
-**Cutting a release:** merge the open `chore(main): release X.Y.Z` PR. Because `GITHUB_TOKEN` opened it, pull request checks don't run on that PR on their own; it only changes version numbers and the changelog, and the image is still smoke-tested after the merge.
+**Cutting a release:** push a `feat:` or `fix:` commit to `main`, directly, through a pull request or with Sync fork. Because `GITHUB_TOKEN` opens and merges the `chore(main): release X.Y.Z` PR, pull request checks don't run on it and its merge starts no new push run; it only changes version numbers and the changelog, and the image is still smoke-tested in the same run. A PR left open by a failed run is merged by the next run.
+
+**Syncing with upstream:** use Sync fork, which merges upstream into `main` (one merge commit per sync, so linear history is not required on `main`). Fork commits stay on top of upstream's original commits. Sync before pushing your own release commit: release-please walks commits by date and stops at the last release, so upstream commits older than that release are left out of its changelog and version bump, though their code still ships. `garmin-mcp.dxt` and `scripts/generate_dxt_tools.py` are kept so those merges stay clean; releases don't ship the `.dxt`.
 
 **If a release has no image** (the run failed or was cancelled after the tag was created): Actions → Release → Run workflow, with the release tag as `version`. Republishing an older release only updates its own `X.Y.Z` tag (and `X.Y` if it is still the newest patch of that minor version); `latest` stays on the newest release.
 
