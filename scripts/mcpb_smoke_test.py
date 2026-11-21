@@ -76,6 +76,12 @@ def unpack(bundle: Path, root: Path) -> Path:
     return extension
 
 
+def is_python_3_12(pyvenv: str) -> bool:
+    """True if pyvenv.cfg says Python 3.12; uv writes `3.12.x` or, since 0.12, just `3.12`."""
+    version = re.search(r"^version_info\s*=\s*(\d+)\.(\d+)(?:\.|\s*$)", pyvenv, re.M)
+    return bool(version) and (int(version.group(1)), int(version.group(2))) == (3, 12)
+
+
 def uv_sync(extension: Path, env: dict) -> float:
     lock_before = (extension / "uv.lock").read_bytes()
     started = time.monotonic()
@@ -84,8 +90,7 @@ def uv_sync(extension: Path, env: dict) -> float:
     assert (extension / "uv.lock").read_bytes() == lock_before, "uv sync rewrote the bundled uv.lock"
 
     pyvenv = (extension / ".venv" / "pyvenv.cfg").read_text(encoding="utf-8")
-    version = re.search(r"^version_info\s*=\s*(\S+)", pyvenv, re.M)
-    assert version and version.group(1).startswith("3.12."), f"venv is not Python 3.12:\n{pyvenv}"
+    assert is_python_3_12(pyvenv), f"venv is not Python 3.12:\n{pyvenv}"
     return elapsed
 
 
